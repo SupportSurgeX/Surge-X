@@ -1,4 +1,4 @@
-import com.surgex.app.engine.location.LocationTrackerpackage com.surgex.app.core.trip
+package com.surgex.app.core.trip
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -7,17 +7,20 @@ import com.surgex.app.domain.fare.FareBreakdown
 import com.surgex.app.domain.payment.PaymentMethod
 import com.surgex.app.domain.receipt.Receipt
 import com.surgex.app.domain.ride.RideSession
+import com.surgex.app.domain.ride.RideStatus
 import com.surgex.app.engine.earnings.DriverEarnings
 import com.surgex.app.engine.trip.CompletedTrip
 import com.surgex.app.engine.trip.TripCompletionEngine
 import com.surgex.app.engine.trip.TripTelemetry
 import com.surgex.app.engine.trip.TripTelemetryEngine
+import com.surgex.app.engine.location.LocationTracker
 import java.util.UUID
 
 class SurgeXTripController {
 
     private val telemetryEngine = TripTelemetryEngine()
     private val locationTracker = LocationTracker()
+
     var ride by mutableStateOf<RideSession?>(null)
         private set
 
@@ -41,10 +44,9 @@ class SurgeXTripController {
         driverName: String,
         pickupAddress: String,
         destinationAddress: String
-        locationTracker.reset()
     ) {
-
         telemetryEngine.reset()
+        locationTracker.reset()
 
         ride = RideSession(
             rideId = "SX-${UUID.randomUUID().toString().take(8).uppercase()}",
@@ -59,29 +61,22 @@ class SurgeXTripController {
     }
 
     fun startTrip() {
-
         telemetryEngine.start()
-
         telemetry = telemetryEngine.snapshot()
 
-        ride?.status =
-            com.surgex.app.domain.ride.RideStatus.IN_PROGRESS
+        ride?.status = RideStatus.IN_PROGRESS
     }
 
     fun addDistance(distanceDeltaKm: Double) {
-
         telemetryEngine.addDistance(distanceDeltaKm)
-
         syncTelemetry()
     }
 
     fun updateTelemetry() {
-
         syncTelemetry()
     }
 
     private fun syncTelemetry() {
-
         val snapshot = telemetryEngine.snapshot()
 
         telemetry = snapshot
@@ -96,56 +91,23 @@ class SurgeXTripController {
         distanceKm: Double,
         durationMinutes: Int
     ) {
-
         ride?.let {
             it.distanceKm = distanceKm
             it.durationMinutes = durationMinutes
         }
-
-        telemetry = TripTelemetry(
-            distanceKm = distanceKm,
-            durationMinutes = durationMinutes,
-            isTracking = telemetry.isTracking
-        )
     }
-   
-fun updateLocation(
-    latitude: Double,
-    longitude: Double
-) {
-    val distanceKm =
-        locationTracker.updateLocation(
-            latitude = latitude,
-            longitude = longitude
-        )
 
-    ride?.distanceKm = distanceKm
-
-    telemetry =
-        telemetry.copy(
-            distanceKm = distanceKm
-        )
-}
     fun completeTrip(
         paymentMethod: PaymentMethod = PaymentMethod.CASH,
         surgeMultiplier: Double = 1.0
     ) {
-
-        syncTelemetry()
-
         val currentRide = ride ?: return
 
-        telemetry = telemetryEngine.stop()
-
-        currentRide.distanceKm = telemetry.distanceKm
-        currentRide.durationMinutes = telemetry.durationMinutes
-
-        completedTrip =
-            TripCompletionEngine().completeTrip(
-                ride = currentRide,
-                paymentMethod = paymentMethod,
-                surgeMultiplier = surgeMultiplier
-            )
+        completedTrip = TripCompletionEngine().completeTrip(
+            ride = currentRide,
+            paymentMethod = paymentMethod,
+            surgeMultiplier = surgeMultiplier
+        )
     }
 
     fun clear() {
