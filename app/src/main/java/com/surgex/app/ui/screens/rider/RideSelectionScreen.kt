@@ -18,7 +18,7 @@ import com.surgex.app.ui.theme.SurgeSurface
 import com.surgex.app.ui.theme.SurgeSurfaceLight
 import com.surgex.app.ui.theme.SurgeWhite
 
-private data class RideOption(
+data class RideOption(
     val name: String,
     val description: String,
     val eta: String,

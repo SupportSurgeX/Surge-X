@@ -53,7 +53,10 @@ fun LiveTripScreen(
     ) {
 
         TripMap(
-            onSafety = onSafety
+            onSafety = onSafety,
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
         )
 
         TripPanel(
@@ -66,13 +69,12 @@ fun LiveTripScreen(
 
 @Composable
 private fun TripMap(
-    onSafety: () -> Unit
+    onSafety: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
 
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .weight(1f)
+        modifier = modifier
             .background(Color(0xFF181818))
     ) {
 

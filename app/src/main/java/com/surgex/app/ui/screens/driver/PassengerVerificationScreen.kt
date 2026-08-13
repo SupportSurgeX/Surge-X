@@ -34,7 +34,11 @@ fun PassengerVerificationScreen(
             .background(SurgeBlack)
     ) {
 
-        VerificationMap()
+        VerificationMap(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        )
 
         VerificationPanel(
             verified = verified,
@@ -48,12 +52,12 @@ fun PassengerVerificationScreen(
 }
 
 @Composable
-private fun VerificationMap() {
+private fun VerificationMap(
+    modifier: Modifier = Modifier
+) {
 
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .weight(1f)
+        modifier = modifier
             .background(Color(0xFF181818)),
         contentAlignment = Alignment.Center
     ) {

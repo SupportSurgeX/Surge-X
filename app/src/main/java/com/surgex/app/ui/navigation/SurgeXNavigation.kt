@@ -194,24 +194,19 @@ fun SurgeXNavigation() {
             }
         }
 
-        SurgeXScreen.RECEIPT -> {
-
+        SurgeXScreen.RECEIPT ->
             val completedTrip = tripController.completedTrip
 
             if (completedTrip == null) {
                 currentScreen = SurgeXScreen.DRIVER_HOME
             } else {
-                ReceiptScreen(
-                    fare = completedTrip.fare,
-                    distanceKm = completedTrip.ride.distanceKm,
-                    durationMinutes = completedTrip.ride.durationMinutes,
-                    paymentMethod = completedTrip.ride.paymentMethod,
-                    onDone = {
-                        tripController.clear()
-                        currentScreen = SurgeXScreen.DRIVER_HOME
-                    }
-                )
-            }
-        }
+ReceiptScreen(
+    ride = completedTrip.ride,
+    receipt = completedTrip.receipt,
+    fare = completedTrip.fare,
+    paymentMethod = completedTrip.ride.paymentMethod,
+    onDone = {
+        tripController.clear()
+        currentScreen = SurgeXScreen.DRIVER_HOME
     }
-}
+)               

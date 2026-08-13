@@ -69,7 +69,10 @@ fun DriverRideRequestScreen(
     ) {
 
         RequestMap(
-            rotation = rotation
+            rotation = rotation,
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(0.9f)
         )
 
         RequestDetails(
@@ -82,13 +85,12 @@ fun DriverRideRequestScreen(
 
 @Composable
 private fun RequestMap(
-    rotation: Float
+    rotation: Float,
+    modifier: Modifier = Modifier
 ) {
 
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .weight(0.9f)
+        modifier = modifier
             .background(Color(0xFF181818)),
         contentAlignment = Alignment.Center
     ) {
