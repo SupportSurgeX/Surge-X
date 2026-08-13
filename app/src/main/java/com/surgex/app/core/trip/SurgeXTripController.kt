@@ -1,4 +1,4 @@
-package com.surgex.app.core.trip
+import com.surgex.app.engine.location.LocationTrackerpackage com.surgex.app.core.trip
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -17,7 +17,7 @@ import java.util.UUID
 class SurgeXTripController {
 
     private val telemetryEngine = TripTelemetryEngine()
-
+    private val locationTracker = LocationTracker()
     var ride by mutableStateOf<RideSession?>(null)
         private set
 
@@ -41,6 +41,7 @@ class SurgeXTripController {
         driverName: String,
         pickupAddress: String,
         destinationAddress: String
+        locationTracker.reset()
     ) {
 
         telemetryEngine.reset()
@@ -107,7 +108,24 @@ class SurgeXTripController {
             isTracking = telemetry.isTracking
         )
     }
+   
+fun updateLocation(
+    latitude: Double,
+    longitude: Double
+) {
+    val distanceKm =
+        locationTracker.updateLocation(
+            latitude = latitude,
+            longitude = longitude
+        )
 
+    ride?.distanceKm = distanceKm
+
+    telemetry =
+        telemetry.copy(
+            distanceKm = distanceKm
+        )
+}
     fun completeTrip(
         paymentMethod: PaymentMethod = PaymentMethod.CASH,
         surgeMultiplier: Double = 1.0
@@ -131,7 +149,7 @@ class SurgeXTripController {
     }
 
     fun clear() {
-
+        locationTracker.reset()
         telemetryEngine.reset()
 
         ride = null
