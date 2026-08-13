@@ -52,7 +52,7 @@ fun DriverPickupScreen(
 }
 
 @Composable
-private fun PickupMap() {
+private fun ColumnScope.PickupMap() {
 
     Box(
         modifier = Modifier

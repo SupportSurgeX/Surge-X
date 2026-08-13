@@ -42,8 +42,10 @@ fun RiderHomeScreen(
 
         TopBar()
 
-        RideRequestSheet()
-    }
+        RideRequestSheet(
+    onChooseRide = onChooseRide)
+
+   }
 }
 
 @Composable
@@ -138,13 +140,15 @@ private fun CircleButton(
 }
 
 @Composable
-private fun RideRequestSheet() {
+private fun RideRequestSheet(
+    onChooseRide: () -> Unit  //
+) {
 
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .align(Alignment.BottomCenter),
+            .align(Alignment.BottomCenter), //
         shape = RoundedCornerShape(
             topStart = 30.dp,
             topEnd = 30.dp

@@ -107,12 +107,12 @@ private fun DriverHeader(
 }
 
 @Composable
-private fun DriverMap() {
+private fun ColumnScope.DriverMap() {
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .weight(1f)
+            .weight(1f) //
             .background(Color(0xFF1B1B1B)),
         contentAlignment = Alignment.Center
     ) {
