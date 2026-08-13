@@ -5,12 +5,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.surgex.app.domain.fare.FareBreakdown
+import com.surgex.app.domain.receipt.Receipt
+import com.surgex.app.domain.ride.RideSession
 import com.surgex.app.ui.theme.SurgeBlack
 import com.surgex.app.ui.theme.SurgeGrey
 import com.surgex.app.ui.theme.SurgeSurface
@@ -18,9 +19,9 @@ import com.surgex.app.ui.theme.SurgeWhite
 
 @Composable
 fun ReceiptScreen(
+    ride: RideSession,
+    receipt: Receipt,
     fare: FareBreakdown,
-    distanceKm: Double,
-    durationMinutes: Int,
     paymentMethod: String,
     onDone: () -> Unit
 ) {
@@ -71,8 +72,6 @@ fun ReceiptScreen(
                     letterSpacing = 2.sp
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
-
                 Text(
                     text = "Trip receipt",
                     color = SurgeGrey,
@@ -81,29 +80,19 @@ fun ReceiptScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                ReceiptRow(
-                    "Trip ID",
-                    "SX-${System.currentTimeMillis().toString().takeLast(8)}"
-                )
-
-                ReceiptRow(
-                    "Pickup",
-                    "Current pickup"
-                )
-
-                ReceiptRow(
-                    "Destination",
-                    "Cape Town CBD"
-                )
+                ReceiptRow("Receipt ID", receipt.id)
+                ReceiptRow("Trip ID", ride.rideId)
+                ReceiptRow("Pickup", ride.pickupAddress)
+                ReceiptRow("Destination", ride.destinationAddress)
 
                 ReceiptRow(
                     "Distance",
-                    "%.1f km".format(distanceKm)
+                    "%.1f km".format(ride.distanceKm)
                 )
 
                 ReceiptRow(
                     "Duration",
-                    "$durationMinutes min"
+                    "${ride.durationMinutes} min"
                 )
 
                 Spacer(modifier = Modifier.height(15.dp))
@@ -116,6 +105,14 @@ fun ReceiptScreen(
                 ReceiptRow("Distance", money(fare.distanceFare))
                 ReceiptRow("Time", money(fare.timeFare))
                 ReceiptRow("Booking fee", money(fare.bookingFee))
+
+                if (fare.waitingFee > 0) {
+                    ReceiptRow("Waiting", money(fare.waitingFee))
+                }
+
+                if (fare.tolls > 0) {
+                    ReceiptRow("Tolls", money(fare.tolls))
+                }
 
                 Spacer(modifier = Modifier.height(10.dp))
 
