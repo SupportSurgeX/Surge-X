@@ -5,6 +5,8 @@ import com.surgex.app.ui.screens.onboarding.RoleSelectionScreen
 import com.surgex.app.ui.screens.rider.RideSelectionScreen
 import com.surgex.app.ui.screens.rider.RiderHomeScreen
 import com.surgex.app.ui.screens.rider.SearchingDriverScreen
+import com.surgex.app.ui.screens.rider.RiderPaymentScreen
+import com.surgex.app.ui.screens.rider.ReceiptScreen
 import com.surgex.app.ui.screens.driver.DriverHomeScreen
 import com.surgex.app.ui.screens.driver.DriverRideRequestScreen
 import com.surgex.app.ui.screens.driver.DriverPickupScreen
@@ -26,7 +28,9 @@ private enum class SurgeXScreen {
     DRIVER_PICKUP,
     PASSENGER_VERIFICATION,
     LIVE_TRIP,
-    TRIP_SUMMARY
+    TRIP_SUMMARY,
+    RIDER_PAYMENT,
+    RECEIPT
 }
 
 @Composable
@@ -160,6 +164,46 @@ fun SurgeXNavigation() {
                 fare = fare,
                 distanceKm = 12.8,
                 durationMinutes = 24,
+                onDone = {
+                    currentScreen = SurgeXScreen.RIDER_PAYMENT
+                }
+            )
+        }
+
+        SurgeXScreen.RIDER_PAYMENT -> {
+
+            val fare = FareCalculator.calculate(
+                FareInput(
+                    distanceKm = 12.8,
+                    durationMinutes = 24
+                )
+            )
+
+            RiderPaymentScreen(
+                total = fare.total,
+                onPaymentSuccess = {
+                    currentScreen = SurgeXScreen.RECEIPT
+                },
+                onCancel = {
+                    currentScreen = SurgeXScreen.TRIP_SUMMARY
+                }
+            )
+        }
+
+        SurgeXScreen.RECEIPT -> {
+
+            val fare = FareCalculator.calculate(
+                FareInput(
+                    distanceKm = 12.8,
+                    durationMinutes = 24
+                )
+            )
+
+            ReceiptScreen(
+                fare = fare,
+                distanceKm = 12.8,
+                durationMinutes = 24,
+                paymentMethod = "Cash",
                 onDone = {
                     currentScreen = SurgeXScreen.DRIVER_HOME
                 }
