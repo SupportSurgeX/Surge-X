@@ -144,7 +144,7 @@ private fun RideRequestSheet(
     onChooseRide: () -> Unit  //
 ) {
 
-    Surface(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
