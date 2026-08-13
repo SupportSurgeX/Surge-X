@@ -45,7 +45,7 @@ fun RiderHomeScreen(
         RideRequestSheet(
     onChooseRide = onChooseRide)
 
-   }
+    }
 }
 
 @Composable
@@ -143,110 +143,115 @@ private fun CircleButton(
 private fun RideRequestSheet(
     onChooseRide: () -> Unit
 ) {
-    Surface(
+    Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .align(Alignment.BottomCenter),
-        shape = RoundedCornerShape(
-            topStart = 30.dp,
-            topEnd = 30.dp
-        ),
-        color = SurgeBlack
+            .fillMaxSize(),
+        contentAlignment = Alignment.BottomCenter
     ) {
-        Column(
-            modifier = Modifier.padding(
-                horizontal = 22.dp,
-                vertical = 20.dp
-            )
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight(),
+            shape = RoundedCornerShape(
+                topStart = 30.dp,
+                topEnd = 30.dp
+            ),
+            color = SurgeBlack
         ) {
-            Box(
-                modifier = Modifier
-                    .width(42.dp)
-                    .height(4.dp)
-                    .clip(RoundedCornerShape(50))
-                    .background(SurgeDarkHandle)
-                    .align(Alignment.CenterHorizontally)
-            )
-
-            Spacer(modifier = Modifier.height(22.dp))
-
-            Text(
-                text = "Where to?",
-                color = SurgeWhite,
-                fontSize = 25.sp,
-                fontWeight = FontWeight.ExtraBold
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            LocationInput(
-                label = "Pickup location",
-                value = "Current location"
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            LocationInput(
-                label = "Destination",
-                value = "Search destination"
-            )
-
-            Spacer(modifier = Modifier.height(22.dp))
-
-            Text(
-                text = "Quick destinations",
-                color = SurgeGrey,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-
-                QuickDestination(
-                    title = "Home",
-                    modifier = Modifier.weight(1f)
-                )
-
-                QuickDestination(
-                    title = "Work",
-                    modifier = Modifier.weight(1f)
-                )
-
-                QuickDestination(
-                    title = "Recent",
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(22.dp))
-
-            Button(
-                onClick = onChooseRide,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(58.dp),
-                shape = RoundedCornerShape(18.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = SurgeWhite,
-                    contentColor = SurgeBlack
+            Column(
+                modifier = Modifier.padding(
+                    horizontal = 22.dp,
+                    vertical = 20.dp
                 )
             ) {
+                Box(
+                    modifier = Modifier
+                        .width(42.dp)
+                        .height(4.dp)
+                        .clip(RoundedCornerShape(50))
+                        .background(SurgeDarkHandle)
+                        .align(Alignment.CenterHorizontally)
+                )
+
+                Spacer(modifier = Modifier.height(22.dp))
 
                 Text(
-                    text = "CHOOSE A RIDE",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    letterSpacing = 1.sp
+                    text = "Where to?",
+                    color = SurgeWhite,
+                    fontSize = 25.sp,
+                    fontWeight = FontWeight.ExtraBold
                 )
-            }
 
-            Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+
+                LocationInput(
+                    label = "Pickup location",
+                    value = "Current location"
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                LocationInput(
+                    label = "Destination",
+                    value = "Search destination"
+                )
+
+                Spacer(modifier = Modifier.height(22.dp))
+
+                Text(
+                    text = "Quick destinations",
+                    color = SurgeGrey,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+
+                    QuickDestination(
+                        title = "Home",
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    QuickDestination(
+                        title = "Work",
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    QuickDestination(
+                        title = "Recent",
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(22.dp))
+
+                Button(
+                    onClick = onChooseRide,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(58.dp),
+                    shape = RoundedCornerShape(18.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = SurgeWhite,
+                        contentColor = SurgeBlack
+                    )
+                ) {
+
+                    Text(
+                        text = "CHOOSE A RIDE",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 1.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+            }
         }
     }
 }
