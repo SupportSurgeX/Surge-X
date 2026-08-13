@@ -141,29 +141,25 @@ private fun CircleButton(
 
 @Composable
 private fun RideRequestSheet(
-    onChooseRide: () -> Unit  //
+    onChooseRide: () -> Unit
 ) {
-
-    Box(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .align(Alignment.BottomCenter), //
+            .align(Alignment.BottomCenter),
         shape = RoundedCornerShape(
             topStart = 30.dp,
             topEnd = 30.dp
         ),
         color = SurgeBlack
-    ) {  
-         //
-
+    ) {
         Column(
             modifier = Modifier.padding(
                 horizontal = 22.dp,
                 vertical = 20.dp
             )
         ) {
-
             Box(
                 modifier = Modifier
                     .width(42.dp)
@@ -254,6 +250,7 @@ private fun RideRequestSheet(
         }
     }
 }
+        
 
 @Composable
 private fun LocationInput(
