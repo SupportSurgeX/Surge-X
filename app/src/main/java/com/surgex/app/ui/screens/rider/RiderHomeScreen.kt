@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.surgex.app.ui.components.SurgeXMap
 import com.surgex.app.ui.theme.SurgeBlack
 import com.surgex.app.ui.theme.SurgeGrey
 import com.surgex.app.ui.theme.SurgeSurface
@@ -24,105 +25,48 @@ import com.surgex.app.ui.theme.SurgeWhite
 fun RiderHomeScreen(
     onChooseRide: () -> Unit
 ) {
-
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(SurgeBlack)
     ) {
 
-        /*
-         * MAP FOUNDATION
-         *
-         * This surface is intentionally isolated.
-         * Later it becomes the real Google Maps / MapLibre
-         * implementation without redesigning the screen.
-         */
-        MapFoundation()
+        // Real OpenStreetMap — Cape Town default
+        SurgeXMap(
+            modifier = Modifier.fillMaxSize(),
+            showUserLocation = true,
+            latitude = -33.9249,
+            longitude = 18.4241
+        )
 
         TopBar()
 
-        RideRequestSheet(
-    onChooseRide = onChooseRide)
-
-    }
-}
-
-@Composable
-private fun MapFoundation() {
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF202020))
-    ) {
-
-        Column(
-            modifier = Modifier.align(Alignment.Center),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-
-            Text(
-                text = "MAP",
-                color = Color.White.copy(alpha = 0.15f),
-                fontSize = 42.sp,
-                fontWeight = FontWeight.ExtraBold
-            )
-
-            Text(
-                text = "LOCATION READY",
-                color = Color.White.copy(alpha = 0.12f),
-                fontSize = 10.sp,
-                letterSpacing = 3.sp
-            )
-        }
-
-        Box(
-            modifier = Modifier
-                .size(18.dp)
-                .clip(CircleShape)
-                .background(SurgeWhite)
-                .align(Alignment.Center)
-        )
+        RideRequestSheet(onChooseRide = onChooseRide)
     }
 }
 
 @Composable
 private fun TopBar() {
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(
-                horizontal = 20.dp,
-                vertical = 18.dp
-            ),
+            .padding(horizontal = 20.dp, vertical = 18.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-
-        CircleButton(
-            text = "☰"
-        )
-
+        CircleButton(text = "☰")
         Text(
             text = "SurgeX",
             color = SurgeWhite,
             fontSize = 21.sp,
             fontWeight = FontWeight.ExtraBold
         )
-
-        CircleButton(
-            text = "●"
-        )
+        CircleButton(text = "●")
     }
 }
 
 @Composable
-private fun CircleButton(
-    text: String
-) {
-
+private fun CircleButton(text: String) {
     Box(
         modifier = Modifier
             .size(46.dp)
@@ -130,46 +74,30 @@ private fun CircleButton(
             .background(Color.Black.copy(alpha = 0.72f)),
         contentAlignment = Alignment.Center
     ) {
-
-        Text(
-            text = text,
-            color = SurgeWhite,
-            fontSize = 18.sp
-        )
+        Text(text = text, color = SurgeWhite, fontSize = 18.sp)
     }
 }
 
 @Composable
-private fun RideRequestSheet(
-    onChooseRide: () -> Unit
-) {
+private fun RideRequestSheet(onChooseRide: () -> Unit) {
     Box(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.BottomCenter
     ) {
         Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight(),
-            shape = RoundedCornerShape(
-                topStart = 30.dp,
-                topEnd = 30.dp
-            ),
+            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+            shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
             color = SurgeBlack
         ) {
             Column(
-                modifier = Modifier.padding(
-                    horizontal = 22.dp,
-                    vertical = 20.dp
-                )
+                modifier = Modifier.padding(horizontal = 22.dp, vertical = 20.dp)
             ) {
                 Box(
                     modifier = Modifier
                         .width(42.dp)
                         .height(4.dp)
                         .clip(RoundedCornerShape(50))
-                        .background(SurgeDarkHandle)
+                        .background(Color(0xFF3A3A3A))
                         .align(Alignment.CenterHorizontally)
                 )
 
@@ -184,17 +112,11 @@ private fun RideRequestSheet(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                LocationInput(
-                    label = "Pickup location",
-                    value = "Current location"
-                )
+                LocationInput(label = "Pickup location", value = "Current location")
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                LocationInput(
-                    label = "Destination",
-                    value = "Search destination"
-                )
+                LocationInput(label = "Destination", value = "Search destination")
 
                 Spacer(modifier = Modifier.height(22.dp))
 
@@ -211,37 +133,22 @@ private fun RideRequestSheet(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-
-                    QuickDestination(
-                        title = "Home",
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    QuickDestination(
-                        title = "Work",
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    QuickDestination(
-                        title = "Recent",
-                        modifier = Modifier.weight(1f)
-                    )
+                    QuickDestination(title = "Home", modifier = Modifier.weight(1f))
+                    QuickDestination(title = "Work", modifier = Modifier.weight(1f))
+                    QuickDestination(title = "Recent", modifier = Modifier.weight(1f))
                 }
 
                 Spacer(modifier = Modifier.height(22.dp))
 
                 Button(
                     onClick = onChooseRide,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(58.dp),
+                    modifier = Modifier.fillMaxWidth().height(58.dp),
                     shape = RoundedCornerShape(18.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = SurgeWhite,
                         contentColor = SurgeBlack
                     )
                 ) {
-
                     Text(
                         text = "CHOOSE A RIDE",
                         fontSize = 14.sp,
@@ -255,62 +162,35 @@ private fun RideRequestSheet(
         }
     }
 }
-        
 
 @Composable
-private fun LocationInput(
-    label: String,
-    value: String
-) {
-
+private fun LocationInput(label: String, value: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(SurgeSurface)
             .clickable { }
-            .padding(
-                horizontal = 16.dp,
-                vertical = 14.dp
-            ),
+            .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-
         Box(
             modifier = Modifier
                 .size(10.dp)
                 .clip(CircleShape)
                 .background(SurgeWhite)
         )
-
         Spacer(modifier = Modifier.width(14.dp))
-
         Column {
-
-            Text(
-                text = label,
-                color = SurgeGrey,
-                fontSize = 11.sp
-            )
-
+            Text(text = label, color = SurgeGrey, fontSize = 11.sp)
             Spacer(modifier = Modifier.height(2.dp))
-
-            Text(
-                text = value,
-                color = SurgeWhite,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium
-            )
+            Text(text = value, color = SurgeWhite, fontSize = 14.sp, fontWeight = FontWeight.Medium)
         }
     }
 }
 
 @Composable
-private fun QuickDestination(
-    title: String,
-    modifier: Modifier = Modifier
-) {
-
+private fun QuickDestination(title: String, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .height(48.dp)
@@ -319,14 +199,6 @@ private fun QuickDestination(
             .clickable { },
         contentAlignment = Alignment.Center
     ) {
-
-        Text(
-            text = title,
-            color = SurgeWhite,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium
-        )
+        Text(text = title, color = SurgeWhite, fontSize = 12.sp, fontWeight = FontWeight.Medium)
     }
 }
-
-private val SurgeDarkHandle = Color(0xFF3A3A3A)
