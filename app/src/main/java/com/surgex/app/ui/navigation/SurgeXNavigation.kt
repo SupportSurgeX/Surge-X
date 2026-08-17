@@ -8,6 +8,8 @@ import com.surgex.app.auth.UserRole
 import com.surgex.app.core.trip.SurgeXTripController
 import com.surgex.app.domain.payment.PaymentMethod
 import com.surgex.app.ui.screens.auth.LoginScreen
+import com.surgex.app.ui.screens.auth.OtpScreen
+import com.surgex.app.ui.screens.auth.PhoneVerifyScreen
 import com.surgex.app.ui.screens.auth.RegisterScreen
 import com.surgex.app.ui.screens.driver.*
 import com.surgex.app.ui.screens.onboarding.RoleSelectionScreen
@@ -20,6 +22,8 @@ private enum class SurgeXScreen {
     ROLE_SELECTION,
     LOGIN,
     REGISTER,
+    PHONE_VERIFY,
+    OTP_VERIFY,
     RIDER_HOME,
     RIDE_SELECTION,
     SEARCHING_DRIVER,
@@ -52,8 +56,8 @@ fun SurgeXNavigation() {
     var currentScreen by remember { mutableStateOf(SurgeXScreen.SPLASH) }
     var selectedRole by remember { mutableStateOf(UserRole.RIDER) }
     var checkingSession by remember { mutableStateOf(true) }
+    var pendingPhone by remember { mutableStateOf("") }
 
-    // Session restore on launch
     LaunchedEffect(Unit) {
         if (!authController.isLoggedIn) {
             checkingSession = false
@@ -82,9 +86,7 @@ fun SurgeXNavigation() {
     when (currentScreen) {
 
         SurgeXScreen.SPLASH -> {
-            SplashScreen {
-                currentScreen = SurgeXScreen.ROLE_SELECTION
-            }
+            SplashScreen { currentScreen = SurgeXScreen.ROLE_SELECTION }
         }
 
         SurgeXScreen.ROLE_SELECTION -> {
@@ -124,8 +126,32 @@ fun SurgeXNavigation() {
             RegisterScreen(
                 role = selectedRole,
                 authController = authController,
-                onRegisterSuccess = { currentScreen = SurgeXScreen.LOGIN },
+                onRegisterSuccess = { phone ->
+                    pendingPhone = phone
+                    currentScreen = SurgeXScreen.PHONE_VERIFY
+                },
                 onBack = { currentScreen = SurgeXScreen.LOGIN }
+            )
+        }
+
+        SurgeXScreen.PHONE_VERIFY -> {
+            PhoneVerifyScreen(
+                phoneNumber = pendingPhone,
+                authController = authController,
+                onCodeSent = { currentScreen = SurgeXScreen.OTP_VERIFY },
+                onBack = { currentScreen = SurgeXScreen.REGISTER }
+            )
+        }
+
+        SurgeXScreen.OTP_VERIFY -> {
+            OtpScreen(
+                phoneNumber = pendingPhone,
+                authController = authController,
+                onVerified = {
+                    currentScreen = if (selectedRole == UserRole.RIDER)
+                        SurgeXScreen.RIDER_HOME else SurgeXScreen.DRIVER_HOME
+                },
+                onBack = { currentScreen = SurgeXScreen.PHONE_VERIFY }
             )
         }
 

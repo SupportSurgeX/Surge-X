@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
 fun RegisterScreen(
     role: UserRole,
     authController: AuthController,
-    onRegisterSuccess: () -> Unit,
+    onRegisterSuccess: (phone: String) -> Unit,
     onBack: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -49,7 +49,7 @@ fun RegisterScreen(
     val roleAccent = if (role == UserRole.RIDER) Color(0xFF00E5FF) else Color(0xFF76FF03)
 
     LaunchedEffect(Unit) {
-        delay(100)
+        delay(80)
         visible = true
     }
 
@@ -68,7 +68,6 @@ fun RegisterScreen(
             .fillMaxSize()
             .background(Color(0xFF050505))
     ) {
-
         Box(
             modifier = Modifier
                 .size(280.dp)
@@ -92,7 +91,6 @@ fun RegisterScreen(
                 .padding(horizontal = 28.dp)
                 .verticalScroll(scrollState)
         ) {
-
             Spacer(modifier = Modifier.height(64.dp))
 
             AnimatedVisibility(
@@ -158,27 +156,21 @@ fun RegisterScreen(
                         onValueChange = { name = it; errorMessage = null },
                         label = "Full name"
                     )
-
                     Spacer(modifier = Modifier.height(14.dp))
-
                     SurgeXTextField(
                         value = email,
                         onValueChange = { email = it; errorMessage = null },
                         label = "Email address",
                         keyboardType = KeyboardType.Email
                     )
-
                     Spacer(modifier = Modifier.height(14.dp))
-
                     SurgeXTextField(
                         value = phone,
                         onValueChange = { phone = it; errorMessage = null },
-                        label = "Phone number",
+                        label = "Phone number (e.g. 0821234567)",
                         keyboardType = KeyboardType.Phone
                     )
-
                     Spacer(modifier = Modifier.height(14.dp))
-
                     SurgeXTextField(
                         value = password,
                         onValueChange = { password = it; errorMessage = null },
@@ -186,9 +178,7 @@ fun RegisterScreen(
                         keyboardType = KeyboardType.Password,
                         isPassword = true
                     )
-
                     Spacer(modifier = Modifier.height(14.dp))
-
                     SurgeXTextField(
                         value = confirmPassword,
                         onValueChange = { confirmPassword = it; errorMessage = null },
@@ -209,9 +199,7 @@ fun RegisterScreen(
                                 color = Color(0xFFFF4444),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Medium,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp)
+                                modifier = Modifier.fillMaxWidth().padding(12.dp)
                             )
                         }
                         Spacer(modifier = Modifier.height(8.dp))
@@ -228,6 +216,8 @@ fun RegisterScreen(
                                     errorMessage = "Passwords do not match."
                                 password.length < 6 ->
                                     errorMessage = "Password must be at least 6 characters."
+                                phone.length < 9 ->
+                                    errorMessage = "Please enter a valid phone number."
                                 else -> {
                                     isLoading = true
                                     scope.launch {
@@ -238,7 +228,7 @@ fun RegisterScreen(
                                             password = password,
                                             role = role
                                         )) {
-                                            is AuthResult.Success -> onRegisterSuccess()
+                                            is AuthResult.Success -> onRegisterSuccess(phone.trim())
                                             is AuthResult.Error -> {
                                                 errorMessage = result.message
                                                 isLoading = false
@@ -248,9 +238,7 @@ fun RegisterScreen(
                                 }
                             }
                         },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(58.dp),
+                        modifier = Modifier.fillMaxWidth().height(58.dp),
                         shape = RoundedCornerShape(18.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color.White,
@@ -283,9 +271,7 @@ fun RegisterScreen(
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onBack() }
+                        modifier = Modifier.fillMaxWidth().clickable { onBack() }
                     )
 
                     Spacer(modifier = Modifier.height(48.dp))
@@ -299,9 +285,7 @@ fun RegisterScreen(
             fontSize = 9.sp,
             fontWeight = FontWeight.ExtraBold,
             letterSpacing = 3.sp,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 24.dp)
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 24.dp)
         )
     }
 }
