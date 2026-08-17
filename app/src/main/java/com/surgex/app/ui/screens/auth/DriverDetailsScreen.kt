@@ -2,10 +2,13 @@ package com.surgex.app.ui.screens.auth
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,14 +18,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.surgex.app.auth.AuthControllerUpdated
+import com.surgex.app.auth.AuthControllerEnhanced
 import com.surgex.app.auth.AuthResult
-import com.surgex.app.auth.DriverProfile
+import com.surgex.app.data.models.DriverProfile
 import kotlinx.coroutines.launch
 
 @Composable
 fun DriverDetailsScreen(
-    authController: AuthControllerUpdated,
+    authController: AuthControllerEnhanced,
     onSuccess: () -> Unit,
     onBack: () -> Unit
 ) {
@@ -39,8 +42,9 @@ fun DriverDetailsScreen(
     var licensePlate by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var expandedCategory by remember { mutableStateOf(false) }
 
-    val carCategories = listOf("Sedan", "SUV", "Minibus", "Truck", "Van", "Hatchback")
+    val carCategories = listOf("Sedan", "SUV", "Minibus", "Truck", "Van", "Hatchback", "Pickup")
 
     Box(
         modifier = Modifier
@@ -56,7 +60,7 @@ fun DriverDetailsScreen(
             Spacer(modifier = Modifier.height(64.dp))
 
             Text(
-                text = "Driver Details",
+                text = "Driver Verification",
                 color = Color.White,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.ExtraBold
@@ -65,7 +69,7 @@ fun DriverDetailsScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Complete your driver information for verification.",
+                text = "Complete your driver information (can update later).",
                 color = Color(0xFF888888),
                 fontSize = 14.sp
             )
@@ -84,7 +88,7 @@ fun DriverDetailsScreen(
 
             SurgeXTextField(
                 value = licenseNumber,
-                onValueChange = { licenseNumber = it },
+                onValueChange = { licenseNumber = it; errorMessage = null },
                 label = "License Number",
                 keyboardType = KeyboardType.Text
             )
@@ -93,7 +97,7 @@ fun DriverDetailsScreen(
 
             SurgeXTextField(
                 value = licenseExpiry,
-                onValueChange = { licenseExpiry = it },
+                onValueChange = { licenseExpiry = it; errorMessage = null },
                 label = "Expiry Date (DD/MM/YYYY)",
                 keyboardType = KeyboardType.Number
             )
@@ -112,7 +116,7 @@ fun DriverDetailsScreen(
 
             SurgeXTextField(
                 value = carBrand,
-                onValueChange = { carBrand = it },
+                onValueChange = { carBrand = it; errorMessage = null },
                 label = "Brand (e.g., Toyota)",
                 keyboardType = KeyboardType.Text
             )
@@ -121,7 +125,7 @@ fun DriverDetailsScreen(
 
             SurgeXTextField(
                 value = carModel,
-                onValueChange = { carModel = it },
+                onValueChange = { carModel = it; errorMessage = null },
                 label = "Model",
                 keyboardType = KeyboardType.Text
             )
@@ -130,8 +134,8 @@ fun DriverDetailsScreen(
 
             SurgeXTextField(
                 value = carYear,
-                onValueChange = { carYear = it },
-                label = "Year (e.g., 2022)",
+                onValueChange = { carYear = it; errorMessage = null },
+                label = "Year",
                 keyboardType = KeyboardType.Number
             )
 
@@ -139,7 +143,7 @@ fun DriverDetailsScreen(
 
             SurgeXTextField(
                 value = carColor,
-                onValueChange = { carColor = it },
+                onValueChange = { carColor = it; errorMessage = null },
                 label = "Color",
                 keyboardType = KeyboardType.Text
             )
@@ -148,44 +152,63 @@ fun DriverDetailsScreen(
 
             SurgeXTextField(
                 value = licensePlate,
-                onValueChange = { licensePlate = it },
+                onValueChange = { licensePlate = it; errorMessage = null },
                 label = "License Plate",
                 keyboardType = KeyboardType.Text
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Car Category Dropdown
+            // Car Category
             Text("Vehicle Category", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Medium)
             Spacer(modifier = Modifier.height(8.dp))
             
             Surface(
                 shape = RoundedCornerShape(12.dp),
-                color = Color(0xFF1A1A1A)
+                color = Color(0xFF1A1A1A),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Row(
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(16.dp)
+                        .clickable { expandedCategory = !expandedCategory },
+                    contentAlignment = Alignment.SpaceBetween
                 ) {
                     Text(carCategory, color = Color.White)
-                    DropdownMenu(
-                        expanded = false,
-                        onDismissRequest = { }
-                    ) {
+                    Icon(Icons.Filled.ArrowDropDown, contentDescription = "Dropdown", tint = Color.White)
+                }
+            }
+
+            if (expandedCategory) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color(0xFF1A1A1A),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
                         carCategories.forEach { category ->
-                            DropdownMenuItem(
-                                text = { Text(category) },
-                                onClick = { carCategory = category }
+                            Text(
+                                text = category,
+                                color = Color.White,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        carCategory = category
+                                        expandedCategory = false
+                                    }
+                                    .padding(16.dp)
                             )
+                            if (category != carCategories.last()) {
+                                Divider(color = Color(0xFF2A2A2A))
+                            }
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             errorMessage?.let {
                 Surface(
@@ -196,6 +219,7 @@ fun DriverDetailsScreen(
                         text = it,
                         color = Color(0xFFFF4444),
                         fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
                         modifier = Modifier.fillMaxWidth().padding(12.dp)
                     )
                 }
@@ -205,11 +229,10 @@ fun DriverDetailsScreen(
             Button(
                 onClick = {
                     when {
-                        licenseNumber.isBlank() -> errorMessage = "License number required."
-                        carBrand.isBlank() -> errorMessage = "Car brand required."
-                        carModel.isBlank() -> errorMessage = "Car model required."
-                        carYear.isBlank() -> errorMessage = "Car year required."
-                        licensePlate.isBlank() -> errorMessage = "License plate required."
+                        licenseNumber.isBlank() -> errorMessage = "License number is required."
+                        carBrand.isBlank() -> errorMessage = "Car brand is required."
+                        carModel.isBlank() -> errorMessage = "Car model is required."
+                        licensePlate.isBlank() -> errorMessage = "License plate is required."
                         else -> {
                             isLoading = true
                             scope.launch {
@@ -244,12 +267,21 @@ fun DriverDetailsScreen(
                 enabled = !isLoading
             ) {
                 Text(
-                    text = if (isLoading) "SAVING..." else "SAVE DRIVER DETAILS",
+                    text = if (isLoading) "SAVING..." else "CONTINUE",
                     color = Color.Black,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "← Back",
+                color = Color(0xFF555555),
+                fontSize = 13.sp,
+                modifier = Modifier.fillMaxWidth().clickable { onBack() }
+            )
 
             Spacer(modifier = Modifier.height(48.dp))
         }
