@@ -1,143 +1,247 @@
-package com.surgex.app.auth
+package com.surgex.app.ui.screens.auth
 
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.tasks.await
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.surgex.app.auth.AuthController
+import com.surgex.app.auth.AuthResult
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-enum class UserRole {
-    RIDER,
-    DRIVER
-}
+@Composable
+fun LoginScreen(
+    authController: AuthController,
+    onLoginSuccess: () -> Unit,
+    onRegister: () -> Unit,
+    onBack: () -> Unit
+) {
+    val scope = rememberCoroutineScope()
 
-sealed class AuthResult {
-    object Success : AuthResult()
-    data class Error(val message: String) : AuthResult()
-}
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var visible by remember { mutableStateOf(false) }
 
-class AuthController {
-
-    private val auth = FirebaseAuth.getInstance()
-    private val db = FirebaseFirestore.getInstance()
-
-    val currentUser: FirebaseUser?
-        get() = auth.currentUser
-
-    val isLoggedIn: Boolean
-        get() = auth.currentUser != null
-
-    suspend fun register(
-        name: String,
-        email: String,
-        phone: String,
-        password: String,
-        role: UserRole
-    ): AuthResult {
-        return try {
-            val result = auth
-                .createUserWithEmailAndPassword(email, password)
-                .await()
-
-            val uid = result.user?.uid
-                ?: return AuthResult.Error("Registration failed.")
-
-            val userData = hashMapOf(
-                "name" to name,
-                "email" to email,
-                "phone" to phone,
-                "role" to role.name,
-                "createdAt" to System.currentTimeMillis()
-            )
-
-            db.collection("users")
-                .document(uid)
-                .set(userData)
-                .await()
-
-            AuthResult.Success
-
-        } catch (e: Exception) {
-            AuthResult.Error(
-                e.message ?: "Registration failed."
-            )
-        }
+    LaunchedEffect(Unit) {
+        delay(80)
+        visible = true
     }
 
-    suspend fun login(
-        email: String,
-        password: String
-    ): AuthResult {
-        return try {
+    val pulse by rememberInfiniteTransition(label = "pulse").animateFloat(
+        initialValue = 0.8f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2400, easing = EaseInOutSine),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulseAnim"
+    )
 
-            // 1. Authenticate with Firebase
-            val result = auth
-                .signInWithEmailAndPassword(email, password)
-                .await()
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF050505))
+    ) {
 
-            // 2. Make sure Firebase returned a user
-            val uid = result.user?.uid
-                ?: return AuthResult.Error("Login failed.")
-
-            // 3. Check that the SurgeX profile exists
-            val document = db
-                .collection("users")
-                .document(uid)
-                .get()
-                .await()
-
-            if (!document.exists()) {
-                auth.signOut()
-                return AuthResult.Error(
-                    "Your SurgeX profile could not be found."
+        // Glow
+        Box(
+            modifier = Modifier
+                .size(360.dp)
+                .align(Alignment.TopCenter)
+                .offset(y = (-80).dp)
+                .scale(pulse)
+                .background(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            Color(0xFF00E5FF).copy(alpha = 0.04f),
+                            Color.Transparent
+                        )
+                    ),
+                    shape = RoundedCornerShape(50)
                 )
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 28.dp)
+        ) {
+            Spacer(modifier = Modifier.height(72.dp))
+
+            AnimatedVisibility(
+                visible = visible,
+                enter = fadeIn(tween(500)) + slideInVertically(tween(500)) { -20 }
+            ) {
+                Column {
+                    Text(
+                        text = "SurgeX",
+                        color = Color.White,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 1.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(56.dp))
+
+                    Text(
+                        text = "Sign in.",
+                        color = Color.White,
+                        fontSize = 44.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = (-1.5).sp
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Welcome back to SurgeX.",
+                        color = Color(0xFF505050),
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
 
-            // 4. Verify that a role exists
-            val role = document.getString("role")
+            Spacer(modifier = Modifier.height(52.dp))
 
-            if (role.isNullOrBlank()) {
-                auth.signOut()
-                return AuthResult.Error(
-                    "Your SurgeX account has no role assigned."
-                )
+            AnimatedVisibility(
+                visible = visible,
+                enter = fadeIn(tween(700, 150)) + slideInVertically(tween(700, 150)) { 50 }
+            ) {
+                Column {
+                    SurgeXTextField(
+                        value = email,
+                        onValueChange = { email = it; errorMessage = null },
+                        label = "Email address",
+                        keyboardType = KeyboardType.Email
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    SurgeXTextField(
+                        value = password,
+                        onValueChange = { password = it; errorMessage = null },
+                        label = "Password",
+                        keyboardType = KeyboardType.Password,
+                        isPassword = true
+                    )
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    errorMessage?.let {
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color(0xFF150000)
+                        ) {
+                            Text(
+                                text = it,
+                                color = Color(0xFFFF4444),
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.fillMaxWidth().padding(14.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
+
+                    Spacer(modifier = Modifier.height(36.dp))
+
+                    Button(
+                        onClick = {
+                            when {
+                                email.isBlank() -> errorMessage = "Please enter your email."
+                                password.isBlank() -> errorMessage = "Please enter your password."
+                                else -> {
+                                    isLoading = true
+                                    scope.launch {
+                                        when (val result = authController.login(email.trim(), password)) {
+                                            is AuthResult.Success -> onLoginSuccess()
+                                            is AuthResult.Error -> {
+                                                errorMessage = result.message
+                                                isLoading = false
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth().height(58.dp),
+                        shape = RoundedCornerShape(18.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.White,
+                            disabledContainerColor = Color(0xFF1C1C1C)
+                        ),
+                        enabled = !isLoading
+                    ) {
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                color = Color.Black,
+                                modifier = Modifier.size(22.dp),
+                                strokeWidth = 2.5.dp
+                            )
+                        } else {
+                            Text(
+                                text = "SIGN IN",
+                                color = Color.Black,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                letterSpacing = 2.sp
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(30.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(text = "No account? ", color = Color(0xFF444444), fontSize = 14.sp)
+                        Text(
+                            text = "Create one",
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.clickable { onRegister() }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(18.dp))
+
+                    Text(
+                        text = "← Back",
+                        color = Color(0xFF303030),
+                        fontSize = 13.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth().clickable { onBack() }
+                    )
+                }
             }
-
-            // Login is successful.
-            // The role will be retrieved by the navigation layer
-            // in the next step.
-            AuthResult.Success
-
-        } catch (e: Exception) {
-            AuthResult.Error(
-                e.message ?: "Login failed."
-            )
         }
-    }
 
-    suspend fun getCurrentUserRole(): UserRole? {
-        return try {
-
-            val uid = auth.currentUser?.uid
-                ?: return null
-
-            val document = db
-                .collection("users")
-                .document(uid)
-                .get()
-                .await()
-
-            when (document.getString("role")) {
-                UserRole.RIDER.name -> UserRole.RIDER
-                UserRole.DRIVER.name -> UserRole.DRIVER
-                else -> null
-            }
-
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    fun logout() {
-        auth.signOut()
+        Text(
+            text = "SURGEX • MOVE DIFFERENTLY",
+            color = Color(0xFF181818),
+            fontSize = 9.sp,
+            fontWeight = FontWeight.ExtraBold,
+            letterSpacing = 3.sp,
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 24.dp)
+        )
     }
 }

@@ -1,6 +1,8 @@
 package com.surgex.app.ui.navigation
 
+import android.content.Context
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
 import com.surgex.app.auth.AuthController
 import com.surgex.app.auth.UserRole
 import com.surgex.app.core.trip.SurgeXTripController
@@ -11,6 +13,7 @@ import com.surgex.app.ui.screens.driver.*
 import com.surgex.app.ui.screens.onboarding.RoleSelectionScreen
 import com.surgex.app.ui.screens.rider.*
 import com.surgex.app.ui.screens.splash.SplashScreen
+import kotlinx.coroutines.launch
 
 private enum class SurgeXScreen {
     SPLASH,
@@ -30,14 +33,51 @@ private enum class SurgeXScreen {
     RECEIPT
 }
 
+private const val PREFS_NAME = "surgex_preferences"
+private const val LAST_MODE_KEY = "last_mode"
+
 @Composable
 fun SurgeXNavigation() {
 
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    val preferences = remember {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    }
+
+    val authController = remember { AuthController() }
+    val tripController = remember { SurgeXTripController() }
+
     var currentScreen by remember { mutableStateOf(SurgeXScreen.SPLASH) }
     var selectedRole by remember { mutableStateOf(UserRole.RIDER) }
+    var checkingSession by remember { mutableStateOf(true) }
 
-    val tripController = remember { SurgeXTripController() }
-    val authController = remember { AuthController() }
+    // Session restore on launch
+    LaunchedEffect(Unit) {
+        if (!authController.isLoggedIn) {
+            checkingSession = false
+            currentScreen = SurgeXScreen.ROLE_SELECTION
+        } else {
+            val profile = authController.getCurrentUserProfile()
+            if (profile == null || profile.accountStatus != "APPROVED") {
+                authController.logout()
+                checkingSession = false
+                currentScreen = SurgeXScreen.ROLE_SELECTION
+            } else {
+                selectedRole = profile.activeMode
+                preferences.edit().putString(LAST_MODE_KEY, profile.activeMode.name).apply()
+                checkingSession = false
+                currentScreen = if (profile.activeMode == UserRole.RIDER)
+                    SurgeXScreen.RIDER_HOME else SurgeXScreen.DRIVER_HOME
+            }
+        }
+    }
+
+    if (checkingSession) {
+        SplashScreen {}
+        return
+    }
 
     when (currentScreen) {
 
@@ -51,29 +91,32 @@ fun SurgeXNavigation() {
             RoleSelectionScreen(
                 onRiderSelected = {
                     selectedRole = UserRole.RIDER
-                    currentScreen = SurgeXScreen.LOGIN
+                    preferences.edit().putString(LAST_MODE_KEY, UserRole.RIDER.name).apply()
+                    currentScreen = if (authController.isLoggedIn)
+                        SurgeXScreen.RIDER_HOME else SurgeXScreen.LOGIN
                 },
                 onDriverSelected = {
                     selectedRole = UserRole.DRIVER
-                    currentScreen = SurgeXScreen.LOGIN
+                    preferences.edit().putString(LAST_MODE_KEY, UserRole.DRIVER.name).apply()
+                    currentScreen = if (authController.isLoggedIn)
+                        SurgeXScreen.DRIVER_HOME else SurgeXScreen.LOGIN
                 }
             )
         }
 
         SurgeXScreen.LOGIN -> {
             LoginScreen(
-                role = selectedRole,
                 authController = authController,
                 onLoginSuccess = {
-                    currentScreen = if (selectedRole == UserRole.RIDER)
-                        SurgeXScreen.RIDER_HOME else SurgeXScreen.DRIVER_HOME
+                    scope.launch {
+                        val profile = authController.getCurrentUserProfile()
+                        selectedRole = profile?.activeMode ?: UserRole.RIDER
+                        currentScreen = if (selectedRole == UserRole.RIDER)
+                            SurgeXScreen.RIDER_HOME else SurgeXScreen.DRIVER_HOME
+                    }
                 },
-                onRegister = {
-                    currentScreen = SurgeXScreen.REGISTER
-                },
-                onBack = {
-                    currentScreen = SurgeXScreen.ROLE_SELECTION
-                }
+                onRegister = { currentScreen = SurgeXScreen.REGISTER },
+                onBack = { currentScreen = SurgeXScreen.ROLE_SELECTION }
             )
         }
 
@@ -81,19 +124,24 @@ fun SurgeXNavigation() {
             RegisterScreen(
                 role = selectedRole,
                 authController = authController,
-                onRegisterSuccess = {
-                    currentScreen = if (selectedRole == UserRole.RIDER)
-                        SurgeXScreen.RIDER_HOME else SurgeXScreen.DRIVER_HOME
-                },
-                onBack = {
-                    currentScreen = SurgeXScreen.LOGIN
-                }
+                onRegisterSuccess = { currentScreen = SurgeXScreen.LOGIN },
+                onBack = { currentScreen = SurgeXScreen.LOGIN }
             )
         }
 
         SurgeXScreen.RIDER_HOME -> {
             RiderHomeScreen(
-                onChooseRide = { currentScreen = SurgeXScreen.RIDE_SELECTION }
+                onChooseRide = { currentScreen = SurgeXScreen.RIDE_SELECTION },
+                onSwitchToDriver = {
+                    scope.launch {
+                        val saved = authController.saveActiveMode(UserRole.DRIVER)
+                        if (saved) {
+                            selectedRole = UserRole.DRIVER
+                            preferences.edit().putString(LAST_MODE_KEY, UserRole.DRIVER.name).apply()
+                            currentScreen = SurgeXScreen.DRIVER_HOME
+                        }
+                    }
+                }
             )
         }
 
@@ -124,7 +172,18 @@ fun SurgeXNavigation() {
 
         SurgeXScreen.DRIVER_HOME -> {
             DriverHomeScreen(
-                onRideRequest = { currentScreen = SurgeXScreen.DRIVER_RIDE_REQUEST }
+                onOnlineChanged = {},
+                onRideRequest = { currentScreen = SurgeXScreen.DRIVER_RIDE_REQUEST },
+                onSwitchToRider = {
+                    scope.launch {
+                        val saved = authController.saveActiveMode(UserRole.RIDER)
+                        if (saved) {
+                            selectedRole = UserRole.RIDER
+                            preferences.edit().putString(LAST_MODE_KEY, UserRole.RIDER.name).apply()
+                            currentScreen = SurgeXScreen.RIDER_HOME
+                        }
+                    }
+                }
             )
         }
 
@@ -180,7 +239,7 @@ fun SurgeXNavigation() {
         SurgeXScreen.RIDER_PAYMENT -> {
             val completedTrip = tripController.completedTrip
             if (completedTrip == null) {
-                currentScreen = SurgeXScreen.DRIVER_HOME
+                currentScreen = SurgeXScreen.RIDER_HOME
             } else {
                 RiderPaymentScreen(
                     total = completedTrip.fare.total,
@@ -193,7 +252,7 @@ fun SurgeXNavigation() {
         SurgeXScreen.RECEIPT -> {
             val completedTrip = tripController.completedTrip
             if (completedTrip == null) {
-                currentScreen = SurgeXScreen.DRIVER_HOME
+                currentScreen = SurgeXScreen.RIDER_HOME
             } else {
                 ReceiptScreen(
                     ride = completedTrip.ride,
@@ -202,7 +261,7 @@ fun SurgeXNavigation() {
                     paymentMethod = completedTrip.ride.paymentMethod,
                     onDone = {
                         tripController.clear()
-                        currentScreen = SurgeXScreen.DRIVER_HOME
+                        currentScreen = SurgeXScreen.RIDER_HOME
                     }
                 )
             }
