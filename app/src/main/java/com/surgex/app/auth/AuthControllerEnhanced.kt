@@ -192,12 +192,12 @@ class AuthControllerEnhanced {
         val uid = auth.currentUser?.uid ?: return AuthResult.Error("Not logged in.")
         
         return try {
-            db.collection("users").document(uid)
-                .update(
-                    "driverProfile" to driverProfile,
-                    "role" to "DRIVER",
-                    "activeMode" to "DRIVER"
-                ).await()
+            val updates = hashMapOf<String, Any>(
+                "driverProfile" to driverProfile,
+                "role" to "DRIVER",
+                "activeMode" to "DRIVER"
+            )
+            db.collection("users").document(uid).update(updates).await()
             AuthResult.Success
         } catch (e: Exception) {
             AuthResult.Error(e.message ?: "Failed to save driver profile.")
