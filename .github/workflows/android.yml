@@ -31,7 +31,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build APK
-        run: ./gradlew :app:assembleDebug --stacktrace
+        run: ./gradlew :app:assembleDebug --stacktrace -Dorg.gradle.jvmargs="-Xmx2048m -XX:MaxPermSize=512m"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
