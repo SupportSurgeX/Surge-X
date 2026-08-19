@@ -28,7 +28,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.surgex.app.auth.AuthController
+import com.surgex.app.auth.AuthControllerEnhanced
 import com.surgex.app.auth.AuthResult
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -36,7 +36,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun OtpScreen(
     phoneNumber: String,
-    authController: AuthController,
+    authController: AuthControllerEnhanced,
     onVerified: () -> Unit,
     onBack: () -> Unit
 ) {
