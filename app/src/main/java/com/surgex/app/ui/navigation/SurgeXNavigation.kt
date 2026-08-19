@@ -6,6 +6,7 @@ import androidx.compose.ui.platform.LocalContext
 import com.surgex.app.auth.AuthControllerEnhanced
 import com.surgex.app.core.trip.SurgeXTripController
 import com.surgex.app.domain.payment.PaymentMethod
+import com.surgex.app.ui.screens.auth.DriverDetailsScreen
 import com.surgex.app.ui.screens.auth.LoginScreen
 import com.surgex.app.ui.screens.auth.OtpScreen
 import com.surgex.app.ui.screens.auth.PhoneVerifyScreen
@@ -199,7 +200,8 @@ fun SurgeXNavigation() {
 
         SurgeXScreen.DRIVER_DETAILS -> {
             DriverDetailsScreen(
-                onSave = { currentScreen = SurgeXScreen.DRIVER_HOME },
+                authController = authController,
+                onSuccess = { currentScreen = SurgeXScreen.DRIVER_HOME },
                 onBack = { currentScreen = SurgeXScreen.DRIVER_HOME }
             )
         }
