@@ -5,13 +5,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.surgex.app.ui.theme.SurgeBlack
@@ -23,7 +25,8 @@ import com.surgex.app.ui.theme.SurgeWhite
 @Composable
 fun RiderHomeScreen(
     onChooseRide: () -> Unit,
-    onSwitchToDriver: () -> Unit = {}
+    onSwitchToDriver: () -> Unit = {},
+    onBack: () -> Unit = {}
 ) {
     Box(
         modifier = Modifier
@@ -31,7 +34,7 @@ fun RiderHomeScreen(
             .background(SurgeBlack)
     ) {
         MapFoundation()
-        TopBar(onSwitchToDriver = onSwitchToDriver)
+        TopBar(onSwitchToDriver = onSwitchToDriver, onBack = onBack)
         RideRequestSheet(onChooseRide = onChooseRide)
     }
 }
@@ -69,7 +72,7 @@ private fun MapFoundation() {
 }
 
 @Composable
-private fun TopBar(onSwitchToDriver: () -> Unit) {
+private fun TopBar(onSwitchToDriver: () -> Unit, onBack: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -77,7 +80,17 @@ private fun TopBar(onSwitchToDriver: () -> Unit) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        CircleButton(text = "☰")
+        // Back Button
+        Box(
+            modifier = Modifier
+                .size(46.dp)
+                .clip(CircleShape)
+                .background(Color(0xFF1A1A1A))
+                .clickable { onBack() },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = "←", fontSize = 18.sp, color = SurgeWhite)
+        }
 
         Text(
             text = "SurgeX",
@@ -101,19 +114,6 @@ private fun TopBar(onSwitchToDriver: () -> Unit) {
 }
 
 @Composable
-private fun CircleButton(text: String) {
-    Box(
-        modifier = Modifier
-            .size(46.dp)
-            .clip(CircleShape)
-            .background(Color.Black.copy(alpha = 0.72f)),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text = text, color = SurgeWhite, fontSize = 18.sp)
-    }
-}
-
-@Composable
 private fun RideRequestSheet(onChooseRide: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
         Surface(
@@ -133,9 +133,9 @@ private fun RideRequestSheet(onChooseRide: () -> Unit) {
                 Spacer(modifier = Modifier.height(22.dp))
                 Text(text = "Where to?", color = SurgeWhite, fontSize = 25.sp, fontWeight = FontWeight.ExtraBold)
                 Spacer(modifier = Modifier.height(16.dp))
-                LocationInput(label = "Pickup location", value = "Current location")
+                LocationInput(label = "Pickup location", value = "Current location", isClickable = false)
                 Spacer(modifier = Modifier.height(10.dp))
-                LocationInput(label = "Destination", value = "Search destination")
+                LocationInput(label = "Destination", value = "Search destination", isClickable = true)
                 Spacer(modifier = Modifier.height(22.dp))
                 Text(text = "Quick destinations", color = SurgeGrey, fontSize = 13.sp, fontWeight = FontWeight.Medium)
                 Spacer(modifier = Modifier.height(12.dp))
@@ -160,22 +160,48 @@ private fun RideRequestSheet(onChooseRide: () -> Unit) {
 }
 
 @Composable
-private fun LocationInput(label: String, value: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(SurgeSurface)
-            .clickable { }
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(SurgeWhite))
-        Spacer(modifier = Modifier.width(14.dp))
-        Column {
-            Text(text = label, color = SurgeGrey, fontSize = 11.sp)
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(text = value, color = SurgeWhite, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+private fun LocationInput(label: String, value: String, isClickable: Boolean = false) {
+    var inputValue by remember { mutableStateOf("") }
+    
+    if (isClickable) {
+        // For destination - allow text input
+        OutlinedTextField(
+            value = inputValue,
+            onValueChange = { inputValue = it },
+            label = { Text(label) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp)),
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedBorderColor = Color(0xFF2A2A2A),
+                focusedBorderColor = Color(0xFF00E5FF),
+                unfocusedContainerColor = SurgeSurface,
+                focusedContainerColor = SurgeSurface,
+                unfocusedLabelColor = SurgeGrey,
+                focusedLabelColor = Color(0xFF00E5FF),
+                unfocusedTextColor = SurgeWhite,
+                focusedTextColor = SurgeWhite
+            ),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            singleLine = true
+        )
+    } else {
+        // For pickup location - read only
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(SurgeSurface)
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(SurgeWhite))
+            Spacer(modifier = Modifier.width(14.dp))
+            Column {
+                Text(text = label, color = SurgeGrey, fontSize = 11.sp)
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(text = value, color = SurgeWhite, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+            }
         }
     }
 }

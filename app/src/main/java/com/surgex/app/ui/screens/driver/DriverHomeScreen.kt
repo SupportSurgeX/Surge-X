@@ -24,14 +24,15 @@ import com.surgex.app.ui.theme.SurgeWhite
 fun DriverHomeScreen(
     onOnlineChanged: (Boolean) -> Unit = {},
     onRideRequest: () -> Unit = {},
-    onSwitchToRider: () -> Unit = {}
+    onSwitchToRider: () -> Unit = {},
+    onBack: () -> Unit = {}
 ) {
     var online by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier.fillMaxSize().background(SurgeBlack)
     ) {
-        DriverHeader(online = online, onSwitchToRider = onSwitchToRider)
+        DriverHeader(online = online, onSwitchToRider = onSwitchToRider, onBack = onBack)
 
         Box(
             modifier = Modifier
@@ -68,13 +69,14 @@ fun DriverHomeScreen(
             onToggleOnline = {
                 online = !online
                 onOnlineChanged(online)
-            }
+            },
+            onRideRequest = onRideRequest
         )
     }
 }
 
 @Composable
-private fun DriverHeader(online: Boolean, onSwitchToRider: () -> Unit) {
+private fun DriverHeader(online: Boolean, onSwitchToRider: () -> Unit, onBack: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -82,6 +84,18 @@ private fun DriverHeader(online: Boolean, onSwitchToRider: () -> Unit) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // Back Button
+        Box(
+            modifier = Modifier
+                .size(46.dp)
+                .clip(CircleShape)
+                .background(Color(0xFF1A1A1A))
+                .clickable { onBack() },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = "←", fontSize = 18.sp, color = SurgeWhite)
+        }
+
         Column {
             Text(text = "SurgeX", color = SurgeWhite, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
             Text(
@@ -108,7 +122,7 @@ private fun DriverHeader(online: Boolean, onSwitchToRider: () -> Unit) {
 }
 
 @Composable
-private fun DriverControlPanel(online: Boolean, onToggleOnline: () -> Unit) {
+private fun DriverControlPanel(online: Boolean, onToggleOnline: () -> Unit, onRideRequest: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = Color(0xFF0A0A0A),
@@ -150,6 +164,27 @@ private fun DriverControlPanel(online: Boolean, onToggleOnline: () -> Unit) {
                 SummaryCard(title = "TODAY", value = "R0.00", modifier = Modifier.weight(1f))
                 SummaryCard(title = "TRIPS", value = "0", modifier = Modifier.weight(1f))
                 SummaryCard(title = "ONLINE", value = "0m", modifier = Modifier.weight(1f))
+            }
+            Spacer(modifier = Modifier.height(18.dp))
+            
+            // Driver Details & Navigation Button
+            if (online) {
+                Button(
+                    onClick = onRideRequest,
+                    modifier = Modifier.fillMaxWidth().height(58.dp),
+                    shape = RoundedCornerShape(18.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF00E5FF),
+                        contentColor = SurgeBlack
+                    )
+                ) {
+                    Text(
+                        text = "MANAGE PROFILE",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 1.sp
+                    )
+                }
             }
         }
     }

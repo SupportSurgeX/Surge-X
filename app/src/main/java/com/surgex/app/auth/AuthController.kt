@@ -19,10 +19,8 @@ data class UserProfile(
     val phoneVerified: Boolean = false
 )
 
-sealed class AuthResult {
-    object Success : AuthResult()
-    data class Error(val message: String) : AuthResult()
-}
+// AuthResult is now imported from AuthControllerEnhanced
+// DO NOT duplicate it here
 
 class AuthController {
 

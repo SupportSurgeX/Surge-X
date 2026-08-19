@@ -18,21 +18,22 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.surgex.app.auth.AuthController
+import com.surgex.app.auth.AuthControllerEnhanced
 import com.surgex.app.auth.AuthResult
+import com.surgex.app.utils.PhoneValidator
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
-    authController: AuthController,
+    authController: AuthControllerEnhanced,
     onLoginSuccess: () -> Unit,
     onRegister: () -> Unit,
     onBack: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
 
-    var email by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -126,10 +127,10 @@ fun LoginScreen(
             ) {
                 Column {
                     SurgeXTextField(
-                        value = email,
-                        onValueChange = { email = it; errorMessage = null },
-                        label = "Email address",
-                        keyboardType = KeyboardType.Email
+                        value = phone,
+                        onValueChange = { phone = it; errorMessage = null },
+                        label = "Phone number",
+                        keyboardType = KeyboardType.Phone
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -165,12 +166,14 @@ fun LoginScreen(
                     Button(
                         onClick = {
                             when {
-                                email.isBlank() -> errorMessage = "Please enter your email."
+                                phone.isBlank() -> errorMessage = "Please enter your phone number."
+                                !PhoneValidator.isValidSouthAfricanPhone(phone) -> 
+                                    errorMessage = "Please enter a valid South African phone (+27...)"
                                 password.isBlank() -> errorMessage = "Please enter your password."
                                 else -> {
                                     isLoading = true
                                     scope.launch {
-                                        when (val result = authController.login(email.trim(), password)) {
+                                        when (val result = authController.login(phone.trim(), password)) {
                                             is AuthResult.Success -> onLoginSuccess()
                                             is AuthResult.Error -> {
                                                 errorMessage = result.message
