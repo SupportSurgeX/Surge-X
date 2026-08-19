@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SurgeX — Move Differently</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --black: #050505;
+    --surface: #0D0D0D;
+    --surface2: #141414;
+    --border: #1A1A1A;
+    --grey: #444;
+    --grey-light: #888;
+    --white: #FFFFFF;
+    --cyan: #00E5FF;
+    --green: #76FF03;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--black);
+    color: var(--white);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 32px;
+    background: rgba(5,5,5,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+  }
+
+  .nav-badge {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--cyan);
+    background: rgba(0,229,255,0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-left: 10px;
+    vertical-align: middle;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--grey-light);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--white); }
+
+  .nav-cta {
+    background: var(--white);
+    color: var(--black) !important;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 700 !important;
+    font-size: 12px !important;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: opacity 0.2s !important;
+  }
+
+  .nav-cta:hover { opacity: 0.85; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 120px 24px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-glow {
+    position: absolute;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(0,229,255,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    animation: pulse 4s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: translateX(-50%) scale(0.9); opacity: 0.6; }
+    50% { transform: translateX(-50%) scale(1.1); opacity: 1; }
+  }
+
+  .hero-eyebrow {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.2s forwards;
+  }
+
+  .hero-title {
+    font-size: clamp(52px, 10vw, 120px);
+    font-weight: 900;
+    line-height: 0.92;
+    letter-spacing: -3px;
+    margin-bottom: 28px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.4s forwards;
+  }
+
+  .hero-title .accent-cyan { color: var(--cyan); }
+  .hero-title .accent-green { color: var(--green); }
+
+  .hero-sub {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--grey-light);
+    max-width: 460px;
+    line-height: 1.6;
+    margin-bottom: 48px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.6s forwards;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.8s forwards;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--white);
+    color: var(--black);
+    padding: 16px 28px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: transform 0.2s, opacity 0.2s;
+  }
+
+  .btn-primary:hover { transform: translateY(-2px); opacity: 0.9; }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: var(--white);
+    padding: 16px 28px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .btn-secondary:hover { border-color: #444; transform: translateY(-2px); }
+
+  .hero-location {
+    margin-top: 52px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    color: #2A2A2A;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 1s forwards;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── STATS ── */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat {
+    background: var(--black);
+    padding: 40px 32px;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 36px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin-bottom: 6px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    color: var(--grey-light);
+    text-transform: uppercase;
+  }
+
+  /* ── MODES ── */
+  .modes {
+    padding: 100px 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-eyebrow {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: var(--grey);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-size: clamp(32px, 5vw, 52px);
+    font-weight: 900;
+    letter-spacing: -1.5px;
+    line-height: 1;
+    margin-bottom: 60px;
+  }
+
+  .modes-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .mode-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s, border-color 0.3s;
+  }
+
+  .mode-card:hover { transform: translateY(-4px); }
+
+  .mode-card.rider { border-color: rgba(0,229,255,0.15); }
+  .mode-card.driver { border-color: rgba(118,255,3,0.15); }
+
+  .mode-card.rider:hover { border-color: rgba(0,229,255,0.4); }
+  .mode-card.driver:hover { border-color: rgba(118,255,3,0.4); }
+
+  .mode-glow {
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  .rider .mode-glow { background: radial-gradient(circle, rgba(0,229,255,0.08) 0%, transparent 70%); }
+  .driver .mode-glow { background: radial-gradient(circle, rgba(118,255,3,0.08) 0%, transparent 70%); }
+
+  .mode-tag {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    margin-bottom: 24px;
+    text-transform: uppercase;
+  }
+
+  .rider .mode-tag { color: var(--cyan); background: rgba(0,229,255,0.1); }
+  .driver .mode-tag { color: var(--green); background: rgba(118,255,3,0.1); }
+
+  .mode-heading {
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    margin-bottom: 12px;
+  }
+
+  .mode-desc {
+    font-size: 14px;
+    color: var(--grey-light);
+    line-height: 1.6;
+    margin-bottom: 28px;
+  }
+
+  .mode-features {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .mode-features li {
+    font-size: 13px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .mode-features li::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .rider .mode-features li::before { background: var(--cyan); }
+  .driver .mode-features li::before { background: var(--green); }
+
+  /* ── HOW ── */
+  .how {
+    padding: 100px 24px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .how-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-top: 60px;
+  }
+
+  .step {
+    position: relative;
+  }
+
+  .step-num {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--grey);
+    margin-bottom: 16px;
+  }
+
+  .step-icon {
+    font-size: 28px;
+    margin-bottom: 16px;
+  }
+
+  .step-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .step-desc {
+    font-size: 13px;
+    color: var(--grey-light);
+    line-height: 1.6;
+  }
+
+  .step-line {
+    position: absolute;
+    top: 14px;
+    right: -12px;
+    width: 24px;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .step:last-child .step-line { display: none; }
+
+  /* ── PRICING ── */
+  .pricing {
+    padding: 100px 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .pricing-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 60px;
+  }
+
+  .price-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px 24px;
+    transition: transform 0.2s;
+  }
+
+  .price-card:hover { transform: translateY(-4px); }
+
+  .price-card.featured {
+    border-color: rgba(0,229,255,0.3);
+    background: linear-gradient(135deg, rgba(0,229,255,0.05) 0%, var(--surface) 100%);
+  }
+
+  .price-name {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--grey-light);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .price-cat {
+    font-size: 20px;
+    font-weight: 900;
+    margin-bottom: 6px;
+  }
+
+  .price-sub {
+    font-size: 12px;
+    color: var(--grey);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  .price-from {
+    font-size: 11px;
+    color: var(--grey);
+    margin-bottom: 4px;
+  }
+
+  .price-amount {
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -1px;
+  }
+
+  .price-unit {
+    font-size: 12px;
+    color: var(--grey-light);
+    font-weight: 400;
+  }
+
+  /* ── SAFETY ── */
+  .safety {
+    padding: 100px 24px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .safety-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+
+  .safety-features {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 40px;
+  }
+
+  .safety-feat {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .safety-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .safety-feat-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .safety-feat-desc {
+    font-size: 13px;
+    color: var(--grey-light);
+    line-height: 1.5;
+  }
+
+  .safety-visual {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    padding: 40px;
+    text-align: center;
+  }
+
+  .safety-shield {
+    font-size: 80px;
+    margin-bottom: 20px;
+    display: block;
+    filter: drop-shadow(0 0 20px rgba(0,229,255,0.3));
+  }
+
+  .safety-visual-title {
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+
+  .safety-visual-sub {
+    font-size: 13px;
+    color: var(--grey-light);
+  }
+
+  /* ── DOWNLOAD ── */
+  .download {
+    padding: 120px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .download-glow {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(0,229,255,0.05) 0%, transparent 70%);
+    pointer-events: none;
+    animation: pulse 3s ease-in-out infinite;
+  }
+
+  .download-title {
+    font-size: clamp(36px, 6vw, 72px);
+    font-weight: 900;
+    letter-spacing: -2px;
+    line-height: 1;
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  .download-sub {
+    font-size: 16px;
+    color: var(--grey-light);
+    margin-bottom: 48px;
+    position: relative;
+  }
+
+  .download-actions {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative;
+  }
+
+  .download-note {
+    margin-top: 24px;
+    font-size: 11px;
+    color: var(--grey);
+    letter-spacing: 1px;
+    position: relative;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: gap;
+  }
+
+  .footer-logo {
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+  }
+
+  .footer-tagline {
+    font-size: 10px;
+    color: var(--grey);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 24px;
+    list-style: none;
+  }
+
+  .footer-links a {
+    font-size: 12px;
+    color: var(--grey);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover { color: var(--white); }
+
+  .footer-copy {
+    font-size: 11px;
+    color: var(--grey);
+  }
+
+  /* ── TICKER ── */
+  .ticker {
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+    padding: 14px 0;
+    white-space: nowrap;
+  }
+
+  .ticker-track {
+    display: inline-flex;
+    gap: 60px;
+    animation: ticker 20s linear infinite;
+  }
+
+  .ticker-item {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--grey);
+    text-transform: uppercase;
+  }
+
+  .ticker-item span { color: var(--cyan); margin-right: 8px; }
+
+  @keyframes ticker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    nav { padding: 16px 20px; }
+    .nav-links { display: none; }
+    .modes-grid { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: 1fr 1fr; }
+    .pricing-cards { grid-template-columns: 1fr 1fr; }
+    .safety-inner { grid-template-columns: 1fr; gap: 40px; }
+    .stats { grid-template-columns: 1fr; }
+    footer { flex-direction: column; gap: 24px; text-align: center; }
+    .step-line { display: none; }
+  }
+
+  @media (max-width: 480px) {
+    .steps { grid-template-columns: 1fr; }
+    .pricing-cards { grid-template-columns: 1fr; }
+  }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div>
+    <span class="nav-logo">SurgeX</span>
+    <span class="nav-badge">BETA</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#modes">Modes</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#safety">Safety</a></li>
+    <li><a href="#download" class="nav-cta">Download</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <p class="hero-eyebrow">Cape Town, South Africa</p>
+  <h1 class="hero-title">
+    MOVE<br>
+    <span class="accent-cyan">DIFFER</span><span class="accent-green">ENTLY</span>
+  </h1>
+  <p class="hero-sub">
+    SurgeX is the e-hailing platform built for Cape Town — fair prices, real driver earnings, next-level safety.
+  </p>
+  <div class="hero-actions">
+    <a href="#download" class="btn-primary">↓ Download App</a>
+    <a href="#how" class="btn-secondary">How it works →</a>
+  </div>
+  <p class="hero-location">Cape Town · South Africa · Est. 2025</p>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    <span class="ticker-item"><span>✦</span> Fair Pricing</span>
+    <span class="ticker-item"><span>✦</span> Driver Earnings First</span>
+    <span class="ticker-item"><span>✦</span> Real-Time Tracking</span>
+    <span class="ticker-item"><span>✦</span> SOS Safety Button</span>
+    <span class="ticker-item"><span>✦</span> Phone Verified Riders</span>
+    <span class="ticker-item"><span>✦</span> Driver Background Checks</span>
+    <span class="ticker-item"><span>✦</span> Cape Town Built</span>
+    <span class="ticker-item"><span>✦</span> Fair Pricing</span>
+    <span class="ticker-item"><span>✦</span> Driver Earnings First</span>
+    <span class="ticker-item"><span>✦</span> Real-Time Tracking</span>
+    <span class="ticker-item"><span>✦</span> SOS Safety Button</span>
+    <span class="ticker-item"><span>✦</span> Phone Verified Riders</span>
+    <span class="ticker-item"><span>✦</span> Driver Background Checks</span>
+    <span class="ticker-item"><span>✦</span> Cape Town Built</span>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat reveal">
+    <div class="stat-value" style="color: var(--cyan);">R10<span style="font-size:20px;color:#444">/km</span></div>
+    <div class="stat-label">Base Rate</div>
+  </div>
+  <div class="stat reveal">
+    <div class="stat-value">100<span style="font-size:20px;color:#444">%</span></div>
+    <div class="stat-label">Tips to Drivers</div>
+  </div>
+  <div class="stat reveal">
+    <div class="stat-value" style="color: var(--green);">R500</div>
+    <div class="stat-label">Weekly Driver Plan</div>
+  </div>
+</div>
+
+<!-- MODES -->
+<section class="modes" id="modes">
+  <p class="section-eyebrow reveal">Choose your mode</p>
+  <h2 class="section-title reveal">One app.<br>Two sides.</h2>
+  <div class="modes-grid">
+    <div class="mode-card rider reveal">
+      <div class="mode-glow"></div>
+      <div class="mode-tag">Rider</div>
+      <h3 class="mode-heading">Get where<br>you're going.</h3>
+      <p class="mode-desc">Fast, safe, reliable rides across Cape Town at prices that make sense.</p>
+      <ul class="mode-features">
+        <li>Live driver tracking</li>
+        <li>Upfront fare estimates</li>
+        <li>Cash or card payment</li>
+        <li>SOS emergency button</li>
+        <li>Trip sharing with contacts</li>
+        <li>Instant ride categories</li>
+      </ul>
+    </div>
+    <div class="mode-card driver reveal">
+      <div class="mode-glow"></div>
+      <div class="mode-tag">Driver</div>
+      <h3 class="mode-heading">Turn your time<br>into income.</h3>
+      <p class="mode-desc">Earn more. Keep more. SurgeX gives drivers a real deal — weekly plan or commission.</p>
+      <ul class="mode-features">
+        <li>R500 weekly plan — keep your fares</li>
+        <li>100% of all tips</li>
+        <li>Earnings dashboard</li>
+        <li>Cash and card trips</li>
+        <li>Driver safety mode</li>
+        <li>BOBO high-value trips</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="how-inner">
+    <p class="section-eyebrow reveal">Simple process</p>
+    <h2 class="section-title reveal">How SurgeX works.</h2>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-line"></div>
+        <div class="step-num">01</div>
+        <div class="step-icon">📍</div>
+        <div class="step-title">Set your pickup</div>
+        <div class="step-desc">Open SurgeX, confirm your location and enter where you're going.</div>
+      </div>
+      <div class="step reveal">
+        <div class="step-line"></div>
+        <div class="step-num">02</div>
+        <div class="step-icon">🚗</div>
+        <div class="step-title">Choose a ride</div>
+        <div class="step-desc">Pick from SurgeX Go, Comfort, XL or Premium — see the fare upfront.</div>
+      </div>
+      <div class="step reveal">
+        <div class="step-line"></div>
+        <div class="step-num">03</div>
+        <div class="step-icon">⚡</div>
+        <div class="step-title">Driver matched</div>
+        <div class="step-desc">A verified driver accepts your request and heads to your pickup.</div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">04</div>
+        <div class="step-icon">✓</div>
+        <div class="step-title">Arrive safely</div>
+        <div class="step-desc">Track your driver live, arrive at your destination, pay your way.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <p class="section-eyebrow reveal">Ride categories</p>
+  <h2 class="section-title reveal">Pick your ride.</h2>
+  <div class="pricing-cards">
+    <div class="price-card featured reveal">
+      <div class="price-name">Most popular</div>
+      <div class="price-cat">SurgeX Go</div>
+      <div class="price-sub">Affordable everyday rides. Up to 4 passengers.</div>
+      <div class="price-from">Starting from</div>
+      <div class="price-amount">R85 <span class="price-unit">est.</span></div>
+    </div>
+    <div class="price-card reveal">
+      <div class="price-name">Comfort</div>
+      <div class="price-cat">SurgeX Comfort</div>
+      <div class="price-sub">More space, more comfort. Up to 4 passengers.</div>
+      <div class="price-from">Starting from</div>
+      <div class="price-amount">R110 <span class="price-unit">est.</span></div>
+    </div>
+    <div class="price-card reveal">
+      <div class="price-name">Group</div>
+      <div class="price-cat">SurgeX XL</div>
+      <div class="price-sub">Extra space for groups. Up to 6 passengers.</div>
+      <div class="price-from">Starting from</div>
+      <div class="price-amount">R145 <span class="price-unit">est.</span></div>
+    </div>
+    <div class="price-card reveal">
+      <div class="price-name">Premium</div>
+      <div class="price-cat">SurgeX Premium</div>
+      <div class="price-sub">BMW, Mercedes, Audi. Arrive in style.</div>
+      <div class="price-from">Starting from</div>
+      <div class="price-amount">R200 <span class="price-unit">est.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- SAFETY -->
+<section class="safety" id="safety">
+  <div class="safety-inner">
+    <div>
+      <p class="section-eyebrow reveal">Built-in protection</p>
+      <h2 class="section-title reveal">Safety is not optional.</h2>
+      <div class="safety-features">
+        <div class="safety-feat reveal">
+          <span class="safety-icon">🆘</span>
+          <div>
+            <div class="safety-feat-title">SOS Panic Button</div>
+            <div class="safety-feat-desc">One tap sends your location and trip details to emergency contacts instantly.</div>
+          </div>
+        </div>
+        <div class="safety-feat reveal">
+          <span class="safety-icon">📍</span>
+          <div>
+            <div class="safety-feat-title">Live Trip Sharing</div>
+            <div class="safety-feat-desc">Share your real-time location and ETA with family or friends during any trip.</div>
+          </div>
+        </div>
+        <div class="safety-feat reveal">
+          <span class="safety-icon">✅</span>
+          <div>
+            <div class="safety-feat-title">Verified Drivers Only</div>
+            <div class="safety-feat-desc">Every SurgeX driver is verified — ID, licence, vehicle, and background check.</div>
+          </div>
+        </div>
+        <div class="safety-feat reveal">
+          <span class="safety-icon">🔒</span>
+          <div>
+            <div class="safety-feat-title">Fraud Protection</div>
+            <div class="safety-feat-desc">Advanced payment protection ensures drivers are never left with an unpaid fare.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="safety-visual reveal">
+      <span class="safety-shield">🛡️</span>
+      <div class="safety-visual-title">Protected every ride.</div>
+      <div class="safety-visual-sub">From the moment you open SurgeX to the second you arrive.</div>
+    </div>
+  </div>
+</section>
+
+<!-- DOWNLOAD -->
+<section class="download" id="download">
+  <div class="download-glow"></div>
+  <h2 class="download-title reveal">Ready to<br><span style="color:var(--cyan)">move</span>?</h2>
+  <p class="download-sub reveal">Download SurgeX and experience Cape Town differently.</p>
+  <div class="download-actions reveal">
+    <a href="https://github.com/Tapie1152/Surge-X/actions" class="btn-primary" target="_blank">↓ Download APK</a>
+    <a href="https://github.com/Tapie1152/Surge-X" class="btn-secondary" target="_blank">View on GitHub →</a>
+  </div>
+  <p class="download-note reveal">Android only · Beta version · Cape Town pilot</p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="footer-logo">SurgeX</div>
+    <div class="footer-tagline">Move Differently</div>
+  </div>
+  <ul class="footer-links">
+    <li><a href="#modes">Rides</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#safety">Safety</a></li>
+    <li><a href="https://github.com/Tapie1152/Surge-X" target="_blank">GitHub</a></li>
+  </ul>
+  <div class="footer-copy">© 2025 SurgeX · Cape Town</div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
