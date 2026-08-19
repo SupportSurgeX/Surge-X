@@ -4,10 +4,16 @@ import android.app.Activity
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.*
 import com.google.firebase.firestore.FirebaseFirestore
+import com.surgex.app.data.models.User
 import kotlinx.coroutines.tasks.await
 import java.util.concurrent.TimeUnit
 
 enum class UserRole { RIDER, DRIVER }
+
+sealed class AuthResult {
+    object Success : AuthResult()
+    data class Error(val message: String) : AuthResult()
+}
 
 data class UserProfile(
     val uid: String,
@@ -18,9 +24,6 @@ data class UserProfile(
     val accountStatus: String,
     val phoneVerified: Boolean = false
 )
-
-// AuthResult is now imported from AuthControllerEnhanced
-// DO NOT duplicate it here
 
 class AuthController {
 
@@ -67,6 +70,28 @@ class AuthController {
         }
     }
 
+    suspend fun getCurrentUser(): User? {
+        val uid = auth.currentUser?.uid ?: return null
+        return try {
+            val doc = db.collection("users").document(uid).get().await()
+            doc.toObject(User::class.java)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    suspend fun switchMode(newMode: UserRole): AuthResult {
+        val uid = auth.currentUser?.uid ?: return AuthResult.Error("Not logged in.")
+        
+        return try {
+            db.collection("users").document(uid)
+                .update("activeMode", newMode.name).await()
+            AuthResult.Success
+        } catch (e: Exception) {
+            AuthResult.Error(e.message ?: "Failed to switch mode.")
+        }
+    }
+
     fun sendOtp(
         phoneNumber: String,
         activity: Activity,
@@ -109,6 +134,7 @@ class AuthController {
             val uid = auth.currentUser?.uid ?: return AuthResult.Error("No user found.")
             db.collection("users").document(uid)
                 .update("phoneVerified", true).await()
+            storedVerificationId = null
             AuthResult.Success
         } catch (e: Exception) {
             AuthResult.Error(e.message ?: "Invalid OTP. Please try again.")
@@ -149,5 +175,6 @@ class AuthController {
 
     fun logout() {
         auth.signOut()
+        storedVerificationId = null
     }
 }
