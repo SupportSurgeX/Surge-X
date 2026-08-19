@@ -14,7 +14,8 @@
         android:icon="@drawable/surgex_icon"
         android:roundIcon="@drawable/surgex_icon"
         android:theme="@style/Theme.SurgeX"
-        android:supportsRtl="true">
+        android:supportsRtl="true"
+        android:usesCleartextTraffic="true">
 
         <activity
             android:name=".MainActivity"

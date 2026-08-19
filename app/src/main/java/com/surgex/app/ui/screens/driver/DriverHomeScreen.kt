@@ -11,14 +11,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import com.surgex.app.ui.theme.SurgeBlack
 import com.surgex.app.ui.theme.SurgeGrey
 import com.surgex.app.ui.theme.SurgeSurface
 import com.surgex.app.ui.theme.SurgeSurfaceLight
 import com.surgex.app.ui.theme.SurgeWhite
+import org.osmdroid.views.MapView
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
 
 @Composable
 fun DriverHomeScreen(
@@ -38,30 +43,8 @@ fun DriverHomeScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .background(Color(0xFF101010)),
-            contentAlignment = Alignment.Center
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = "DRIVER MAP",
-                    color = SurgeWhite.copy(alpha = 0.06f),
-                    fontSize = 34.sp,
-                    fontWeight = FontWeight.ExtraBold
-                )
-                Spacer(modifier = Modifier.height(5.dp))
-                Text(
-                    text = "LOCATION READY",
-                    color = SurgeWhite.copy(alpha = 0.05f),
-                    fontSize = 9.sp,
-                    letterSpacing = 3.sp
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .size(14.dp)
-                    .clip(CircleShape)
-                    .background(SurgeWhite)
-            )
+            MapFoundation()
         }
 
         DriverControlPanel(
@@ -73,6 +56,27 @@ fun DriverHomeScreen(
             onRideRequest = onRideRequest
         )
     }
+}
+
+@Composable
+private fun MapFoundation() {
+    val context = LocalContext.current
+    
+    AndroidView(
+        modifier = Modifier.fillMaxSize(),
+        factory = {
+            MapView(it).apply {
+                setTileSource(TileSourceFactory.MAPNIK)
+                controller.setZoom(15.0)
+                // Default to Cape Town, South Africa
+                controller.setCenter(GeoPoint(-33.9249, 18.4241))
+            }
+        },
+        update = { mapView ->
+            // Update map as needed
+            mapView.invalidate()
+        }
+    )
 }
 
 @Composable
