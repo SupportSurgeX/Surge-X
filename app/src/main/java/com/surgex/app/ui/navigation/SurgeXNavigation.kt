@@ -3,7 +3,9 @@ package com.surgex.app.ui.navigation
 import android.content.Context
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
+import com.surgex.app.auth.AuthController
 import com.surgex.app.auth.AuthControllerEnhanced
+import com.surgex.app.auth.UserRole
 import com.surgex.app.core.trip.SurgeXTripController
 import com.surgex.app.domain.payment.PaymentMethod
 import com.surgex.app.ui.screens.auth.DriverDetailsScreen
@@ -50,11 +52,11 @@ fun SurgeXNavigation() {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
 
-    val authController = remember { AuthControllerEnhanced() }
+    val authController = remember { AuthController() }
     val tripController = remember { SurgeXTripController() }
 
     var currentScreen by remember { mutableStateOf(SurgeXScreen.SPLASH) }
-    var selectedRole by remember { mutableStateOf("RIDER") }
+    var selectedRole by remember { mutableStateOf(UserRole.RIDER) }
     var checkingSession by remember { mutableStateOf(true) }
     var pendingPhone by remember { mutableStateOf("") }
 
@@ -64,15 +66,15 @@ fun SurgeXNavigation() {
             currentScreen = SurgeXScreen.LOGIN
         } else {
             val profile = authController.getCurrentUser()
-            if (profile == null || profile.accountStatus != "ACTIVE") {
+            if (profile == null) {
                 authController.logout()
                 checkingSession = false
                 currentScreen = SurgeXScreen.LOGIN
             } else {
                 selectedRole = profile.activeMode
-                preferences.edit().putString(LAST_MODE_KEY, profile.activeMode).apply()
+                preferences.edit().putString(LAST_MODE_KEY, profile.activeMode.name).apply()
                 checkingSession = false
-                currentScreen = if (profile.activeMode == "RIDER")
+                currentScreen = if (profile.activeMode == UserRole.RIDER)
                     SurgeXScreen.RIDER_HOME else SurgeXScreen.DRIVER_HOME
             }
         }
@@ -95,8 +97,8 @@ fun SurgeXNavigation() {
                 onLoginSuccess = {
                     scope.launch {
                         val profile = authController.getCurrentUser()
-                        selectedRole = profile?.activeMode ?: "RIDER"
-                        currentScreen = if (selectedRole == "RIDER")
+                        selectedRole = profile?.activeMode ?: UserRole.RIDER
+                        currentScreen = if (selectedRole == UserRole.RIDER)
                             SurgeXScreen.RIDER_HOME else SurgeXScreen.DRIVER_HOME
                     }
                 },
@@ -131,7 +133,7 @@ fun SurgeXNavigation() {
                 phoneNumber = pendingPhone,
                 authController = authController,
                 onVerified = {
-                    currentScreen = if (selectedRole == "RIDER")
+                    currentScreen = if (selectedRole == UserRole.RIDER)
                         SurgeXScreen.RIDER_HOME else SurgeXScreen.DRIVER_HOME
                 },
                 onBack = { currentScreen = SurgeXScreen.PHONE_VERIFY }
@@ -143,10 +145,10 @@ fun SurgeXNavigation() {
                 onChooseRide = { currentScreen = SurgeXScreen.RIDE_SELECTION },
                 onSwitchToDriver = {
                     scope.launch {
-                        val saved = authController.switchMode("DRIVER")
+                        val saved = authController.switchMode(UserRole.DRIVER)
                         if (saved is com.surgex.app.auth.AuthResult.Success) {
-                            selectedRole = "DRIVER"
-                            preferences.edit().putString(LAST_MODE_KEY, "DRIVER").apply()
+                            selectedRole = UserRole.DRIVER
+                            preferences.edit().putString(LAST_MODE_KEY, UserRole.DRIVER.name).apply()
                             currentScreen = SurgeXScreen.DRIVER_HOME
                         }
                     }
@@ -186,10 +188,10 @@ fun SurgeXNavigation() {
                 onRideRequest = { currentScreen = SurgeXScreen.DRIVER_DETAILS },
                 onSwitchToRider = {
                     scope.launch {
-                        val saved = authController.switchMode("RIDER")
+                        val saved = authController.switchMode(UserRole.RIDER)
                         if (saved is com.surgex.app.auth.AuthResult.Success) {
-                            selectedRole = "RIDER"
-                            preferences.edit().putString(LAST_MODE_KEY, "RIDER").apply()
+                            selectedRole = UserRole.RIDER
+                            preferences.edit().putString(LAST_MODE_KEY, UserRole.RIDER.name).apply()
                             currentScreen = SurgeXScreen.RIDER_HOME
                         }
                     }
