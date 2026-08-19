@@ -20,13 +20,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.surgex.app.auth.AuthController
+import com.surgex.app.auth.AuthControllerEnhanced
 import kotlinx.coroutines.delay
 
 @Composable
 fun PhoneVerifyScreen(
     phoneNumber: String,
-    authController: AuthController,
+    authController: AuthControllerEnhanced,
     onCodeSent: () -> Unit,
     onBack: () -> Unit
 ) {
